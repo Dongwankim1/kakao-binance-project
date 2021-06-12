@@ -27,8 +27,11 @@ ws.onerror = (err) => {
 ws.onmessage = (msg) => {
     try {
       const message = JSON.parse(msg.data);
-      logger.info(message.k.t);
-      console.log(message.k.t)
+      logger.info(message.k);
+      logger.info(message.e);
+      logger.info(message.E);
+      logger.info(`volume ${message.k.v}`);
+
       /*
       if (message.e) {
         if (this._handlers.has(message.e)) {
@@ -57,14 +60,4 @@ setInterval(() => {
   }, 5000);
 
 let lastCurrent = +new Date();
-/*
-ws.setHandler("depthUpdate", (params) => {
-  const current = +new Date();
-  const EvsNow = current - params.E;
-  const fromLastEvent = current - lastCurrent;
-  console.log(
-    `[Spot ${streamName}] current:${current} fromLastEvent: ${fromLastEvent} delta EvsNow: ${EvsNow}`
-  );
-  lastCurrent = current;
-});
-*/
+
