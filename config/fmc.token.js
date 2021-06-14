@@ -1,1 +1,0 @@
-module.exports={token : ["cbbQR2YBSouPJjjjpXQ9ga:APA91bFiOqftq-n2Vb3u2ToWbW-m00DetePJlXPdSrpdpuJMOvoeYyoZ_S5idlKtQ8MUgY19CYmebCTYHQPBAvtWVwpEtxR9O6cmYedBE_VHcBksJPrD1OOuEzn9l5GkQYFx_Khhjo-r"]}
