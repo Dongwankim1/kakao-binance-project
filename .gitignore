@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 /config/api.keys.js
+/config/bianance-kakao-firebase-adminsdk-eb7hw-7761bc162c.json
 # testing
 /coverage
 
