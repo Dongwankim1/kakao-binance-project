@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon server.js",
     "stream": "nodemon -w ./src --exec babel-node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nodemon test.js"
   },
   "author": "",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "pm2": "5.1.0",
     "puppeteer": "10.0.0",
     "sequelize": "6.6.2",
+    "shelljs": "0.8.4",
     "socket.io": "4.1.2",
     "ws": "7.4.6"
   }
