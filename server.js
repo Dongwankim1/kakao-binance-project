@@ -5,8 +5,11 @@ const puppeteer = require("puppeteer");
 const funcmessage = require("./lib/message");
 
 const streamName = "btcbusd@kline_1m";
+const streamName2 = "btcbusd@kline_15m";
 
 const AVERAGECOUNT = 16;
+const ONEMINRATIO = 9;
+const FIFTMINRATIO = 5;
 let html = "";
 let prevPageData;
 
@@ -55,21 +58,28 @@ setInterval(() => {
 }, 180000);
 */
 
-let tempFIFMTimeTradedata = [];
+let tempOneMinDatas = [];
+let tempFifMinDatas = [];
+function checkToData(dataarray,type) {
+  let ratio =0;
+  if(type==='one'){
+    ratio=ONEMINRATIO;
+  }else if(type==='fift'){
+    ratio=FIFTMINRATIO;
+  }
+  logger.info('*data count  '+type+'  '+dataarray.length);
 
-function checkToData() {
-  
-  if (tempFIFMTimeTradedata.length >= AVERAGECOUNT) {
+  if (dataarray.length >= AVERAGECOUNT) {
     let average = 0;
     let sum = 0;
-    for (let i = 0; i < tempFIFMTimeTradedata.length - 1; i++) {
-      sum += parseFloat(tempFIFMTimeTradedata[i].v);
+    for (let i = 0; i < dataarray.length - 1; i++) {
+      sum += parseFloat(dataarray[i].v);
     }
-    average = sum / (tempFIFMTimeTradedata.length - 1);
-
+    average = sum / (dataarray.length - 1);
+    logger.info('*average  ',average);
     if (
-      parseFloat(tempFIFMTimeTradedata[tempFIFMTimeTradedata.length - 1].v) >
-      average * 6
+      parseFloat(dataarray[dataarray.length - 1].v) >
+      average * ratio
     ) {
       let message = {
         title: "1분봉 거래량 증가",
@@ -78,9 +88,11 @@ function checkToData() {
       funcmessage.sendToMessage(message);
     }
   }
-  logger.info('checkToData done')
+
   return true;
 }
+
+
 
 const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName}`);
 
@@ -104,40 +116,42 @@ ws.onerror = (err) => {
   logger.warn("ws error", err);
 };
 ws.onmessage = async (msg) => {
-  try {
-    const message = JSON.parse(msg.data);
-    logger.info('onmessage start')
-    await (function () {
-      if (tempFIFMTimeTradedata.length > AVERAGECOUNT) {
-        tempFIFMTimeTradedata.splice(0, 1);
-      }
-      if (tempFIFMTimeTradedata.length === 0) {
-        let data = new Object();
-        (data["opentime"] = message.k.t),
-          (data["closetime"] = message.k.T),
-          (data["v"] = message.k.v);
+    logger.info('onmessage1 start')
+    try{
+    await saveToMinData(msg,tempOneMinDatas)
+    await checkToData(tempOneMinDatas,'one');
+  } catch (e) {
+    logger.warn("Parse message failed", e);
+  }
+};
 
-        tempFIFMTimeTradedata.push(data);
-      } else if (
-        tempFIFMTimeTradedata[tempFIFMTimeTradedata.length - 1]["opentime"] ===
-        message.k.t
-      ) {
-        let data = new Object();
-        (data["opentime"] = message.k.t),
-          (data["closetime"] = message.k.T),
-          (data["v"] = message.k.v);
-        tempFIFMTimeTradedata.splice(tempFIFMTimeTradedata.length - 1, 1, data);
-      } else {
-        let data = new Object();
-        (data["opentime"] = message.k.t),
-          (data["closetime"] = message.k.T),
-          (data["v"] = message.k.v);
-        tempFIFMTimeTradedata.push(data);
 
-        
-      }
-    })();
-    await checkToData();
+const ws2 = new WebSocket(`wss://stream.binance.com:9443/ws/${streamName2}`);
+
+ws2.onopen = (e) => {
+  logger.info(`ws connected ${e}`);
+};
+
+ws2.on("pong", () => {
+  logger.debug("receieved pong from server");
+});
+ws2.on("ping", () => {
+  logger.debug("==========receieved ping from server");
+  ws.pong();
+});
+
+ws2.onclose = () => {
+  logger.warn("ws closed");
+};
+
+ws2.onerror = (err) => {
+  logger.warn("ws error", err);
+};
+ws2.onmessage = async (msg) => {
+    logger.info('onmessage2 start')
+    try{
+    await saveToMinData(msg,tempFifMinDatas);
+    await checkToData(tempFifMinDatas,'fift');
   } catch (e) {
     logger.warn("Parse message failed", e);
   }
@@ -145,9 +159,48 @@ ws.onmessage = async (msg) => {
 
 
 
+function saveToMinData(msg,dataarray){
+  const message = JSON.parse(msg.data);
+  logger.info('onmessage start')
+
+    if (dataarray.length > AVERAGECOUNT) {
+      dataarray.splice(0, 1);
+    }
+    if (dataarray.length === 0) {
+      let data = new Object();
+      (data["opentime"] = message.k.t),
+        (data["closetime"] = message.k.T),
+        (data["v"] = message.k.v);
+
+      dataarray.push(data);
+    } else if (
+      dataarray[dataarray.length - 1]["opentime"] ===
+      message.k.t
+    ) {
+      let data = new Object();
+      (data["opentime"] = message.k.t),
+        (data["closetime"] = message.k.T),
+        (data["v"] = message.k.v);
+      dataarray.splice(dataarray.length - 1, 1, data);
+    } else {
+      let data = new Object();
+      (data["opentime"] = message.k.t),
+        (data["closetime"] = message.k.T),
+        (data["v"] = message.k.v);
+      dataarray.push(data);
+      
+    }
+  
+}
+
 setInterval(() => {
   if (ws.readyState === WebSocket.OPEN) {
     ws.ping();
-    logger.debug("ping server");
+    logger.debug("ping1 server");
+  }
+
+  if (ws2.readyState === WebSocket.OPEN) {
+    ws2.ping();
+    logger.debug("ping2 server");
   }
 }, 5000);
