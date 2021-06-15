@@ -3,8 +3,10 @@ const logger = require("./lib/logger");
 const axios = require("axios");
 const puppeteer = require("puppeteer");
 const funcmessage = require("./lib/message");
-const AVERAGECOUNT = 16;
+
 const streamName = "btcbusd@kline_1m";
+
+const AVERAGECOUNT = 16;
 let html = "";
 let prevPageData;
 
