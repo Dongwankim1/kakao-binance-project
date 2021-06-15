@@ -13,8 +13,10 @@ const FIFTMINRATIO = 5;
 let html = "";
 let prevPageData;
 
+for(let i=0;i<3;i++){
+    funcmessage.sendToMessage( {
+        title:'시범 데이터 발송11',
+        body:'바디 데이터 전송'
+    },i);
+}
 
-funcmessage.sendToMessage( {
-    title:'시범 데이터 발송11',
-    body:'바디 데이터 전송'
-});

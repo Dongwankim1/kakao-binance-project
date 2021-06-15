@@ -61,6 +61,7 @@ setInterval(() => {
 let tempOneMinDatas = [];
 let tempFifMinDatas = [];
 function checkToData(dataarray,type) {
+
   let ratio =0;
   if(type==='one'){
     ratio=ONEMINRATIO;
@@ -83,9 +84,9 @@ function checkToData(dataarray,type) {
     ) {
       let message = {
         title: "1분봉 거래량 증가",
-        body: "바디 데이터 전송",
+        body: `현재 거래량 ${dataarray[dataarray.length - 1].v} 평균 거래량 ${average}`,
       };
-      funcmessage.sendToMessage(message);
+      funcmessage.sendToMessage(message,String(dataarray[dataarray.length-1].opentime));
     }
   }
 
