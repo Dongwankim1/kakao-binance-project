@@ -8,8 +8,8 @@ const streamName = "btcbusd@kline_1m";
 const streamName2 = "btcbusd@kline_15m";
 
 const AVERAGECOUNT = 16;
-const ONEMINRATIO = 9;
-const FIFTMINRATIO = 5;
+const ONEMINRATIO = 8;
+const FIFTMINRATIO = 4;
 let html = "";
 let prevPageData;
 
@@ -77,7 +77,7 @@ function checkToData(dataarray,type) {
       sum += parseFloat(dataarray[i].v);
     }
     average = sum / (dataarray.length - 1);
-    logger.info('*average  ',average);
+    logger.info(`*sum= ${sum}      *average ==${average}    *current volume ${dataarray[dataarray.length-1].v}`);
     if (
       parseFloat(dataarray[dataarray.length - 1].v) >
       average * ratio
@@ -117,7 +117,7 @@ ws.onerror = (err) => {
   logger.warn("ws error", err);
 };
 ws.onmessage = async (msg) => {
-    logger.info('onmessage1 start')
+
     try{
     await saveToMinData(msg,tempOneMinDatas)
     await checkToData(tempOneMinDatas,'one');
@@ -162,7 +162,7 @@ ws2.onmessage = async (msg) => {
 
 function saveToMinData(msg,dataarray){
   const message = JSON.parse(msg.data);
-  logger.info('onmessage start')
+
 
     if (dataarray.length > AVERAGECOUNT) {
       dataarray.splice(0, 1);
